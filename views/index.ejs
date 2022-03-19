@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+      integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+      crossorigin="anonymous"
+    />
+    <title>Web Scrapper</title>
+    <style>
+      .a {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+          url("https://images.pexels.com/photos/39284/macbook-apple-imac-computer-39284.jpeg?cs=srgb&dl=pexels-pixabay-39284.jpg&fm=jpg")
+            no-repeat;
+        background-size: cover;
+        background-position: center;
+        min-height: 400px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      h3 {
+        color: var(--blue);
+        font: 1.8rem sans-serif;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+      p {
+        color: #f5f5f5;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="a">
+      <div class="container d-flex justify-content-center">
+        <div class="col-lg-8 mt-4">
+          <div class="text-center mb-5">
+            <h3>A Dynamic Web Scrapper</h3>
+            <p>
+              This web scraper is a specialized tool designed to accurately and
+              quickly extract data from all the <b>tables</b> on a web page.
+              Enter the URL of the web page below.
+            </p>
+          </div>
+
+          <% if(typeof error_msg != 'undefined') {%>
+          <div
+            class="alert alert-warning alert-dismissible fade show"
+            role="alert"
+          >
+            <%= error_msg %>
+
+            <button
+              type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <% } %>
+
+          <div id="error" class="text-danger"></div>
+          <form
+            class="mt-4 url-form"
+            name="myform"
+            enctype="application/x-www-form-urlencoded"
+            id="myForm"
+          >
+            <input
+              type="text"
+              name="url"
+              class="form-control"
+              pattern="https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,}"
+              placeholder="https://www.i-want-to-scrap-this-site.com"
+            />
+            <button class="btn btn-primary my-2 px-3" type="submit">
+              Enter
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="b my-2">
+      <div class="container bg-white">
+        <div class="display">
+          <p id="count"></p>
+          <p class="display_text"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="my-3">
+      <div class="container bg-white shadow p-3">
+        <p class="text-dark">
+          Web scraping is an automatic method to obtain large amounts of data
+          from websites. Most of this data is unstructured data in an HTML
+          format which is then converted into structured data in a spreadsheet
+          or a database so that it can be used in various applications. There
+          are many different ways to perform web scraping to obtain data from
+          websites. These include using online services, particular API’s or
+          even creating your code for web scraping from scratch. Many large
+          websites, like Google, Twitter, Facebook, StackOverflow, etc.
+          <a
+            class="btn btn-primary py-0"
+            href="https://www.geeksforgeeks.org/what-is-web-scraping-and-how-to-use-it/"
+            >Read More</a
+          >
+        </p>
+      </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+      var form = document.getElementById("myForm");
+      var error = document.getElementById("error");
+      var count = document.getElementById("count");
+      var display_text = document.querySelector(".display_text");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (form.url.value.length <= 0) {
+          error.textContent = "URL field must not be empty";
+          return;
+        } else {
+          error.textContent = "";
+        }
+
+        axios
+          .post("/post", {
+            url: form.url.value,
+          })
+          .then(function (response) {
+            var display = document.querySelector(".display");
+
+            if (response.data.length > 0) {
+              display_text.textContent = "";
+              count.innerHTML = "";
+              count.innerHTML = `<b class="text-primary text-weight-bold py-3"> No Of Tables: ${response.data.length}</b>`;
+              response.data.forEach((element) => {
+                const node = document.createElement("p");
+                node.classList.add("p-3", "text-dark", "shadow");
+                const textnode = document.createTextNode(element);
+                node.appendChild(textnode);
+                display_text.appendChild(node);
+              });
+            } else {
+              count.innerHTML = "";
+              count.innerHTML = `<b class="text-primary text-weight-bold py-3"> No Of Tables: ${response.data.length}</b>`;
+              display_text.classList.add(
+                "p-4",
+                "text-danger",
+                "font-weight-bold"
+              );
+              display_text.textContent =
+                "No Table Data on this site, Please try another website.";
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+        // console.log(form.url.value);
+        // form.reset();
+      });
+    </script>
+  </body>
+</html>
